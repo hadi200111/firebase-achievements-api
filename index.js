@@ -28,16 +28,16 @@ app.get('/checkOrCreate/:steamid', async (req, res) => {
     }
 
     const achievements = [
-      { id: 'ACH_KILL1', title: 'First Blood', description: 'Get 1 kill', goal: 1 },
-      { id: 'ACH_KILL10', title: 'Killer', description: 'Get 10 kills', goal: 10 },
-      { id: 'ACH_KILL50', title: 'Mass Murderer', description: 'Get 50 kills', goal: 50 },
+      { id: 'ACH_KILL1', title: 'I Am here', description: 'Get 100 kills', goal: 100 },
+      { id: 'ACH_KILL10', title: 'Killer', description: 'Get 1000 kills', goal: 1000 },
+      { id: 'ACH_KILL50', title: 'Mass Murderer', description: 'Get 10000 kills', goal: 10000 },
       { id: 'ACH_ROUND1', title: 'Survivor', description: 'Win 1 round', goal: 1 },
       { id: 'ACH_ROUND25', title: 'Veteran', description: 'Win 25 rounds', goal: 25 },
-      { id: 'ACH_PLANT', title: 'Bomber', description: 'Plant 1 bomb', goal: 1 },
-      { id: 'ACH_DEFUSE', title: 'Defuser', description: 'Defuse 1 bomb', goal: 1 },
-      { id: 'ACH_NINJA', title: 'Ninja', description: 'Kill 3 enemies without dying in a round', goal: 1 },
-      { id: 'ACH_HEADSHOTS', title: 'Sharpshooter', description: 'Get 3 headshots', goal: 1 },
-      { id: 'ACH_ROUNDS_PLAYED', title: 'Marathon', description: 'Play 10 rounds', goal: 1 }
+      { id: 'ACH_PLANT', title: 'Bomber', description: 'Plant 25 bomb', goal: 25 },
+      { id: 'ACH_DEFUSE', title: 'Defuser', description: 'Defuse 25 bomb', goal: 25 },
+      { id: 'ACH_NINJA', title: 'Ninja', description: 'Kill 5 enemies without dying in a round', goal: 1 },
+      { id: 'ACH_HEADSHOTS', title: 'Sharpshooter', description: 'Get 99 headshots', goal: 99 },
+      { id: 'ACH_ROUNDS_PLAYED', title: 'Marathon', description: 'Play 150 rounds', goal: 150 }
     ];
 
     const batch = db.batch();
@@ -157,6 +157,35 @@ app.get('/achievements/:steamid', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).send("<h2>Error loading achievements.</h2>");
+  }
+});
+
+app.get('/bombplanted/:steamid', async (req, res) => {
+  const steamid = req.params.steamid;
+
+  if (!steamid) {
+    return res.status(400).json({ error: 'Missing steamid' });
+  }
+
+  try {
+    const achievementRef = achievementsRef.doc(steamid).collection('achievements').doc('ACH_PLANT');
+    const doc = await achievementRef.get();
+
+    if (!doc.exists) {
+      return res.status(404).json({ error: 'Achievement not found' });
+    }
+
+    const data = doc.data();
+    const currentProgress = data.progress || 0;
+
+    await achievementRef.update({
+      progress: currentProgress + 1
+    });
+
+    return res.status(200).json({ success: true, newProgress: currentProgress + 1 });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Internal error' });
   }
 });
 
