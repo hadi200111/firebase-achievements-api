@@ -58,16 +58,10 @@ app.get('/checkOrCreate/:steamid', async (req, res) => {
 app.get('/achievements/:steamid', async (req, res) => {
   const steamid = req.params.steamid;
   try {
-    // Reference to the user's achievements collection
     const snapshot = await achievementsRef.doc(steamid).collection('achievements').get();
 
     if (snapshot.empty) {
-      return res.send(`
-        <html><body style="background:#0f1115;color:#eee;font-family:Arial,sans-serif;padding:10px;">
-          <h1 style="text-align:center;color:#00c3ff;">Your Achievements</h1>
-          <h2>No achievements found.</h2>
-        </body></html>
-      `);
+      return res.send("<h2>No achievements found.</h2>");
     }
 
     let html = `
@@ -121,8 +115,16 @@ app.get('/achievements/:steamid', async (req, res) => {
           .progress-fill {
             background-color: #00e676;
             height: 100%;
+            width: 0%;
             transition: width 0.3s ease;
           }
+          .progress-text {
+            font-family: monospace;
+            color: #aaa;
+            font-size: 12px;
+            margin-top: 4px;
+        }
+
         </style>
       </head>
       <body>
@@ -131,19 +133,17 @@ app.get('/achievements/:steamid', async (req, res) => {
 
     snapshot.forEach(doc => {
       const a = doc.data();
-      // Prevent division by zero or missing 'goal'
-      const goal = a.goal && a.goal > 0 ? a.goal : 1;
-      const progress = a.progress || 0;
-      const percent = Math.min(100, Math.floor((progress / goal) * 100));
+      const percent = Math.floor((a.progress / a.goal) * 100);
       const statusClass = percent >= 100 ? "unlocked" : (percent > 0 ? "" : "locked");
 
       html += `
         <div class="achievement ${statusClass}">
-          <div class="title">${a.title || "No Title"}</div>
-          <div class="description">${a.description || ""}</div>
+          <div class="title">${a.title}</div>
+          <div class="description">${a.description}</div>
           <div class="progress-bar">
             <div class="progress-fill" style="width:${percent}%;"></div>
           </div>
+          <div class="progress-text">${a.progress}/${a.goal}</div>
         </div>
       `;
     });
@@ -155,13 +155,8 @@ app.get('/achievements/:steamid', async (req, res) => {
 
     res.send(html);
   } catch (err) {
-    console.error("Error fetching achievements:", err);
-    res.status(500).send(`
-      <html><body style="background:#0f1115;color:#eee;font-family:Arial,sans-serif;padding:10px;">
-        <h1 style="text-align:center;color:#00c3ff;">Your Achievements</h1>
-        <h2>Error loading achievements.</h2>
-      </body></html>
-    `);
+    console.error(err);
+    res.status(500).send("<h2>Error loading achievements.</h2>");
   }
 });
 
