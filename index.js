@@ -90,7 +90,7 @@ app.get('/achievements/:steamid', (req, res) => {
             border-radius: 3px;
             display: flex;
             flex-direction: column;
-            gap: 4px; /* Consistent gap between elements */
+            gap: 6px; /* Consistent gap between elements */
         }
         .unlocked { border-left-color: #00c853; }
         .locked { border-left-color: #c62828; opacity: 0.8; } /* Less opacity reduction */
@@ -139,7 +139,7 @@ app.get('/achievements/:steamid', (req, res) => {
         }
     </style>
     </head><body>
-    <img src="/background.jpg" class="header-image" alt="Achievements Header">
+    <img src="${req.protocol}://${req.get('host')}/background.jpg" class="header-image" alt="Achievements Header">
     <div class="fake-navbar">
         <h1>YOUR ACHIEVEMENTS</h1>
     </div>
