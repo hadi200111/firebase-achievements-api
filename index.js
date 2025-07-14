@@ -10,23 +10,20 @@ app.use(cors());
 // Simple achievement definitions
 const ACHIEVEMENTS_LIST = [
     { title: "First Blood", description: "Get 1 kill", goal: 1 },
-    { title: "Killer", description: "Get 10 kills", goal: 10 },
-    { title: "Mass Murderer", description: "Get 50 kills", goal: 50 },
-    { title: "Survivor", description: "Win 1 round", goal: 1 },
-    { title: "Veteran", description: "Win 25 rounds", goal: 25 },
-    { title: "Bomber", description: "Plant 1 bomb", goal: 1 },
-    { title: "Defuser", description: "Defuse 1 bomb", goal: 1 },
-    { title: "Ninja", description: "Kill 3 enemies without dying in a round", goal: 1 },
-    { title: "Sharpshooter", description: "Get 3 headshots", goal: 1 },
-    { title: "Marathon", description: "Play 10 rounds", goal: 10 },
-    { title: "Living On Edge", description: "Survive a round with 1hp", goal: 1 },
-    { title: "Unkillable", description: "Kill 15 enemies without dying", goal: 1 },
-    { title: "Double HE", description: "Kill 2 enemies with 1 HE grenade", goal: 1 },
-    { title: "Wallbang Wizard", description: "Get a kill through a wall", goal: 10 },
     { title: "Pacifist", description: "Win a round without firing your gun", goal: 1 },
-    { title: "Support Player", description: "Assist in 50 kills", goal: 50 },
-    { title: "Flashbang Friend", description: "Blind 25 enemies with flashbangs", goal: 25 },
-    { title: "From the Grave", description: "Kill an enemy with a grenade after dying", goal: 1 }
+    { title: "Living On Edge", description: "Survive a round with 1hp", goal: 1 },
+    { title: "Ninja", description: "Kill 5 enemies without dying in a round", goal: 1 },
+    { title: "Sharpshooter", description: "Get 3 headshots in on round", goal: 1 },
+    { title: "Wallbang Wizard", description: "Hit 200 bullets through the wall", goal: 200 },
+    { title: "Bomber", description: "Plant a 100 C4", goal: 100 },
+    { title: "Defuser", description: "Defuse a 100 C4", goal: 100 },
+    { title: "Support Player", description: "Assist in 99 kills", goal: 50 },
+    { title: "Double HE", description: "Kill 2 enemies with 1 HE grenade", goal: 1 },
+    { title: "From the Grave", description: "Kill an enemy with a grenade after dying", goal: 1 },
+    { title: "Unkillable", description: "Kill 10 enemies without dying", goal: 1 },
+    { title: "Mass Murderer", description: "Get 9999 kills", goal: 9999 },
+    { title: "Veteran", description: "Win 500 rounds", goal: 500 },
+    { title: "Marathon", description: "Play 1000 rounds", goal: 1000 },
 ];
 
 app.get('/achievements/:steamid', (req, res) => {
