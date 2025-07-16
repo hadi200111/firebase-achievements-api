@@ -12,8 +12,8 @@ const ACHIEVEMENTS_LIST = [
     { title: "First Blood", description: "Get 1 kill", goal: 1 },
     { title: "Pacifist", description: "Win a round without firing your gun", goal: 1 },
     { title: "Living On Edge", description: "Survive a round with 1hp", goal: 1 },
-    { title: "Ninja", description: "Kill 5 enemies without dying in a round", goal: 1 },
-    { title: "Sharpshooter", description: "Get 3 headshots in on round", goal: 1 },
+    { title: "One-Man Army", description: "Kill 5 enemies in one round", goal: 1 },
+    { title: "Sharpshooter", description: "Get 3 headshots in one round", goal: 1 },
     { title: "Wallbang Wizard", description: "Hit 200 bullets through the wall", goal: 200 },
     { title: "Bomber", description: "Plant a 100 C4", goal: 100 },
     { title: "Defuser", description: "Defuse a 100 C4", goal: 100 },
@@ -161,8 +161,12 @@ app.get('/achievements/:steamid', (req, res) => {
             `;
         }
 
-        html += `</body></html>`;
-        res.send(html);
+        html += `
+    <div style="text-align: center; font-size: 10px; color: #555; margin-top: 20px;">
+        Made with ❤️ by <strong>traS</strong>
+    </div>
+</body></html>`;
+res.send(html);
 
     } catch (error) {
         console.error(error);
