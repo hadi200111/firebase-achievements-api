@@ -24,6 +24,7 @@ const ACHIEVEMENTS_LIST = [
     { title: "Mass Murderer", description: "Get 9999 kills", goal: 9999 },
     { title: "Veteran", description: "Win 500 rounds", goal: 500 },
     { title: "Marathon", description: "Play 1000 rounds", goal: 1000 },
+    { title: "chani achivement", description: "get killed while flying", goal: 1 },
 ];
 
 app.get('/achievements/:steamid', (req, res) => {
