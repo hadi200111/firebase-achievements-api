@@ -26,8 +26,40 @@ const ACHIEVEMENTS_LIST = [
     { title: "Marathon", description: "Play 1000 rounds", goal: 1000 },
 ];
 
+const SEASON2_ACHIEVEMENTS_LIST = [
+    { title: "██████ ██ ██████ ████████", description: "███ ██ █████ █████", goal: 50 },
+    { title: "██████ ██ █████ ██████", description: "█████ ███ ███████ ████ ██████████", goal: 100 },
+    { title: "██████ ██ █████", description: "███ ██ ██████ ███████ █████ ███████", goal: 10 },
+    { title: "██████ ██ █████████", description: "███████ ███ ███████", goal: 500 },
+    { title: "██████ ██ █████ █████", description: "███ █ █████ ██ █████ ██ ███████", goal: 1 },
+    { title: "██████ ██ █████████", description: "████ ███ █████████ █████ █████", goal: 200 },
+    { title: "██████ ██ ██████ ████", description: "███ ██ ███ ██████████", goal: 25 },
+    { title: "██████ ██ ███ ███████", description: "███ ██ ███ ██████", goal: 50 },
+    { title: "██████ ██ ██████ ███", description: "███ ███ ██████ █████", goal: 100 },
+    { title: "██████ ██ ████████", description: "███ ██ █████ ████ ████ ███", goal: 50 },
+    { title: "██████ ██ ████ ██████", description: "████ ███ ███████ ██ █████████", goal: 500 },
+    { title: "██████ ██ ███ ██████", description: "████ ███ ███████ ██ ████ ███", goal: 100 },
+    { title: "██████ ██ ███████████", description: "███████ ███ ██████", goal: 200 },
+    { title: "██████ ██ ██████████", description: "███ ███ █████████", goal: 500 },
+    { title: "██████ ██ █████████", description: "█████ ███ ████", goal: 1 }
+];
+
 app.get('/achievements/:steamid', (req, res) => {
     const dataParam = req.query.data;
+    const START_DATE = new Date('2025-08-18T00:00:00Z');
+
+    function getTimeSinceStart(startDate) {
+    const now = new Date();
+    console.log(now);
+    let totalHours = Math.floor((startDate - now) / 1000 / 60 / 60);
+    const months = Math.floor(totalHours / (30 * 24));
+    totalHours -= months * 30 * 24;
+    const days = Math.floor(totalHours / 24);
+    const hours = totalHours % 24;
+
+    return { months, days, hours };
+    }
+
     
     if (!dataParam) {
         return res.status(400).send("<h2>Missing achievement data</h2>");
@@ -35,15 +67,47 @@ app.get('/achievements/:steamid', (req, res) => {
 
     try {
         // Parse the comma-separated achievement progress values
-        const progressValues = decodeURIComponent(dataParam).split(',').map(Number);
+        const allProgressValues = decodeURIComponent(dataParam).split(',').map(Number);
+        
+        // Split into Season 1 and Season 2 progress
+        const season1Progress = allProgressValues.slice(0, ACHIEVEMENTS_LIST.length);
+        const season2Progress = allProgressValues.slice(ACHIEVEMENTS_LIST.length, ACHIEVEMENTS_LIST.length + SEASON2_ACHIEVEMENTS_LIST.length);
         
         // Map to achievement objects with progress
-        const achievements = ACHIEVEMENTS_LIST.map((ach, i) => ({
+        const season1Achievements = ACHIEVEMENTS_LIST.map((ach, i) => ({
             ...ach,
-            progress: progressValues[i] || 0
+            progress: season1Progress[i] || 0
         }));
 
+        const season2Achievements = SEASON2_ACHIEVEMENTS_LIST.map((ach, i) => ({
+            ...ach,
+            progress: season2Progress[i] || 0
+        }));
+
+        const { months, days, hours } = getTimeSinceStart(START_DATE);
+        const runtimeText = `${months}m ${days}d ${hours}h`;
+
+        function generateAchievementsHTML(achievements) {
+    return achievements.map(a => {
+        const percent = Math.floor((a.progress / a.goal) * 100);
+        const isCompleted = (a.progress >= a.goal);
+        const statusClass = isCompleted ? "unlocked" : (percent > 0 ? "" : "locked");
+
+        return `
+            <div class="achievement ${statusClass}">
+                <div class="title">${a.title}</div>
+                <div class="description">${a.description}</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width:${percent}%;"></div>
+                </div>
+                ${!isCompleted ? `<div class="progress-text">${a.progress}/${a.goal}</div>` : ''}
+            </div>
+        `;
+    }).join('');
+}
+
         // Generate HTML
+                // Generate HTML
         let html = `
     <html><head><title>Achievements</title>
     <style>
@@ -53,23 +117,23 @@ app.get('/achievements/:steamid', (req, res) => {
             font-family: Arial, sans-serif; 
             margin: 0;
             padding: 0;
-            font-size: 14px; /* Reduced base font size */
+            font-size: 14px;
         }
         .header-image {
             width: 100%;
-            max-height: 150px; /* Reduced header height */
+            max-height: 150px;
             object-fit: cover;
         }
         .fake-navbar {
             background-color: #1a1e23;
-            padding: 10px 0; /* Reduced padding */
+            padding: 10px 0;
             text-align: center;
             border-bottom: 1px solid #2d333b;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3); /* Softer shadow */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
         }
         .fake-navbar h1 {
             color: #fff;
-            font-size: 18px; /* Smaller title */
+            font-size: 18px;
             margin: 0;
             padding: 0;
             text-shadow: 0 0 3px rgba(100,200,255,0.5);
@@ -77,29 +141,29 @@ app.get('/achievements/:steamid', (req, res) => {
         }
         .container {
             max-width: 800px;
-            margin: 10px auto; /* Reduced margin */
+            margin: 10px auto;
             padding: 0 15px;
         }
         .achievement { 
             background: #1c1f24; 
-            border-left: 4px solid #444; /* Thinner border */
-            padding: 8px 12px; /* Reduced padding */
-            margin-bottom: 8px; /* Tighter spacing */
+            border-left: 4px solid #444;
+            padding: 8px 12px;
+            margin-bottom: 8px;
             border-radius: 3px;
             display: flex;
             flex-direction: column;
-            gap: 15px; /* Consistent gap between elements */
+            gap: 15px;
         }
         .unlocked { border-left-color: #00c853; }
-        .locked { border-left-color: #c62828; opacity: 0.8; } /* Less opacity reduction */
+        .locked { border-left-color: #c62828; opacity: 0.8; }
         .title { 
             font-weight: bold; 
-            font-size: 13px; /* Smaller title */
+            font-size: 13px;
             line-height: 1.2;
         }
         .description { 
-            font-size: 11px; /* Smaller description */
-            color: #aaa; /* Lighter gray */
+            font-size: 11px;
+            color: #aaa;
             line-height: 1.2;
         }
         .progress-container {
@@ -113,7 +177,7 @@ app.get('/achievements/:steamid', (req, res) => {
             background: #333; 
             border-radius: 3px; 
             overflow: hidden; 
-            height: 6px; /* Thinner progress bar */ 
+            height: 6px;
         }
         .progress-fill { 
             background: #00e676; 
@@ -124,48 +188,121 @@ app.get('/achievements/:steamid', (req, res) => {
         .progress-text { 
             font-family: monospace; 
             color: #aaa; 
-            font-size: 10px; /* Smaller progress text */
+            font-size: 10px;
             min-width: 40px;
             text-align: right;
         }
-        /* Compact layout for completed achievements */
+        .navbar-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+        .runtime {
+            font-size: 11px;
+            color: #ccc;
+            font-family: monospace;
+        }
         .achievement.unlocked .description {
-            display: inline; /* Save space */
+            display: inline;
         }
         .achievement.unlocked .progress-container {
-            display: none; /* Hide progress for completed */
+            display: none;
+        }
+        .season-tabs {
+        display: flex;
+        justify-content: center;
+        margin: 10px 0;
+        gap: 20px;
+        /* Fallback for CS 1.6 */
+        white-space: nowrap;
+    }
+    
+    .season-tab {
+        padding: 8px 16px;
+        cursor: pointer;
+        background-color: #1e1e1e;
+        border: 1px solid #444;
+        color: #fff;
+        border-radius: 4px;
+        transition: 0.2s;
+        /* Fallback for CS 1.6 */
+        display: inline-block;
+        margin: 0 10px;
+    }
+        .season-tab:hover, .season-tab.active {
+            background-color: #444;
+        }
+        .blurred {
+            filter: blur(6px);
+            pointer-events: none;
+            user-select: none;
+        }
+        /* Added for proper switching */
+        .season-container {
+            display: none;
+        }
+        .season-container.active {
+            display: block;
         }
     </style>
-    </head><body>
+    </head>
+    <body>
     <img src="${base64Image}" alt="Achievements Header" style="width: 100%; max-height: 40%; object-fit: cover;">
     <div class="fake-navbar">
-        <h1>YOUR ACHIEVEMENTS</h1>
+        <div class="navbar-content">
+            <h1>YOUR ACHIEVEMENTS</h1>
+            <span class="runtime">Phase 2 Will Be Released In: ${runtimeText}</span>
+        </div>
+    </div>
+    <div class="season-tabs">
+        <div class="season-tab active" onclick="showSeason('season1')">Phase 1</div>
+        <div class="season-tab" onclick="showSeason('season2')">Phase 2</div>
     </div>
     <div class="container">
-`;
-
-        for (const a of achievements) {
-            const percent = Math.floor((a.progress / a.goal) * 100);
-            const isCompleted = (a.progress >= a.goal);
-            const statusClass = isCompleted ? "unlocked" : (percent > 0 ? "" : "locked");
-
-            html += `
-                <div class="achievement ${statusClass}">
-                    <div class="title">${a.title}</div>
-                    <div class="description">${a.description}</div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width:${percent}%;"></div>
-                    </div>
-                    ${!isCompleted ? `<div class="progress-text">${a.progress}/${a.goal}</div>` : ''}
-                </div>
-            `;
+        <div id="season1-achievements" class="season-container active">
+            ${generateAchievementsHTML(season1Achievements)}
+        </div>
+        <div id="season2-achievements" class="season-container" 
+     style="position:relative;">
+    ${generateAchievementsHTML(season2Achievements)}
+    <!-- Fallback for CS 1.6 -->
+    <div class="motd-blur-fallback" 
+         style="position:absolute; top:0; left:0; width:100%; height:100%; 
+                background:rgba(0,0,0,0.7); pointer-events:none;"></div>
+</div>
+    </div>
+    <script type="text/javascript">
+        function showSeason(season) {
+            // Update active tab styling
+            var tabs = document.querySelectorAll('.season-tab');
+            for (var i = 0; i < tabs.length; i++) {
+                tabs[i].classList.remove('active');
+            }
+            event.target.classList.add('active');
+            
+            // Show/hide achievement lists
+            var season1 = document.getElementById('season1-achievements');
+            var season2 = document.getElementById('season2-achievements');
+            
+            if (season === 'season1') {
+                season1.classList.add('active');
+                season1.classList.remove('blurred');
+                season2.classList.remove('active');
+                season2.classList.add('blurred');
+            } else {
+                season1.classList.remove('active');
+                season1.classList.add('blurred');
+                season2.classList.add('active');
+            }
         }
-
-        html += `
+    </script>
     <div style="text-align: center; font-size: 10px; color: #555; margin-top: 20px;">
         Made with ❤️ by <strong>traS</strong>
     </div>
-</body></html>`;
+    <div style="height: 30px;"></div>
+    </body>
+</html>`;
 res.send(html);
 
     } catch (error) {
