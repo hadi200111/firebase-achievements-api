@@ -27,21 +27,29 @@ const ACHIEVEMENTS_LIST = [
 ];
 
 const SEASON2_ACHIEVEMENTS_LIST = [
-    { title: "██████ ██ ██████ ████████", description: "███ ██ █████ █████", goal: 50 },
-    { title: "██████ ██ █████ ██████", description: "█████ ███ ███████ ████ ██████████", goal: 100 },
-    { title: "██████ ██ █████", description: "███ ██ ██████ ███████ █████ ███████", goal: 10 },
-    { title: "██████ ██ █████████", description: "███████ ███ ███████", goal: 500 },
-    { title: "██████ ██ █████ █████", description: "███ █ █████ ██ █████ ██ ███████", goal: 1 },
-    { title: "██████ ██ █████████", description: "████ ███ █████████ █████ █████", goal: 200 },
-    { title: "██████ ██ ██████ ████", description: "███ ██ ███ ██████████", goal: 25 },
-    { title: "██████ ██ ███ ███████", description: "███ ██ ███ ██████", goal: 50 },
-    { title: "██████ ██ ██████ ███", description: "███ ███ ██████ █████", goal: 100 },
+    { title: "Slasher", description: "Get 50 Knife Kills", goal: 50 },
+    { title: "Hot Streak", description: "Win 3 Round In Raw", goal: 100 },
+    { title: "Standing Tall", description: "Kill Two Eneimes From The Highest Point of Site A in one round", goal: 10 },
+    { title: "Secret Room", description: "Find The Hidden Room", goal: 500 },
+    { title: "Map Control Master", description: "Kill 1 Enemy in Tunnels then 1 Enemy in Mid then 1 enemy in B site", goal: 1 },
+    { title: "Shooting birds", description: "kill an enemy while flying", goal: 200 },
+    { title: "AK47 Master", description: "Get 500 AK47 Kills", goal: 25 },
+    { title: "M4A1 Master", description: "Get 500 M4A1 Kills", goal: 50 },
+    { title: "AWP Master", description: "Get 500 AWP Kills", goal: 100 },
     { title: "██████ ██ ████████", description: "███ ██ █████ ████ ████ ███", goal: 50 },
     { title: "██████ ██ ████ ██████", description: "████ ███ ███████ ██ █████████", goal: 500 },
     { title: "██████ ██ ███ ██████", description: "████ ███ ███████ ██ ████ ███", goal: 100 },
     { title: "██████ ██ ███████████", description: "███████ ███ ██████", goal: 200 },
     { title: "██████ ██ ██████████", description: "███ ███ █████████", goal: 500 },
     { title: "██████ ██ █████████", description: "█████ ███ ████", goal: 1 }
+];
+
+const INVENTORY_LIST = [
+    { title: "Bones", description: "Remains of fallen enemies, has a 25% chance of dropping."},
+    { title: "Flesh", description: "Fresh or rotting, has a 25% chance of dropping."},
+    { title: "Iron", description: "A Rare drop from enemies killed in Mid Area, has a 10% chance of dropping."},
+    { title: "Gold Tooth", description: "Its very rare to obtain this item only enemies with 30 kills could drop this item with a 10% chance"},
+    { title: "Mythical Crystal", description: "A rare Crystal that holds mysterious powers. can be dropped from eneimes killed in bomb sites after planting"},
 ];
 
 app.get('/achievements/:steamid', (req, res) => {
@@ -71,7 +79,17 @@ app.get('/achievements/:steamid', (req, res) => {
         
         // Split into Season 1 and Season 2 progress
         const season1Progress = allProgressValues.slice(0, ACHIEVEMENTS_LIST.length);
-        const season2Progress = allProgressValues.slice(ACHIEVEMENTS_LIST.length, ACHIEVEMENTS_LIST.length + SEASON2_ACHIEVEMENTS_LIST.length);
+
+        const season2Progress = allProgressValues.slice(
+        ACHIEVEMENTS_LIST.length,
+        ACHIEVEMENTS_LIST.length + SEASON2_ACHIEVEMENTS_LIST.length
+        );
+
+        const inventoryProgress = allProgressValues.slice(
+        ACHIEVEMENTS_LIST.length + SEASON2_ACHIEVEMENTS_LIST.length,
+        ACHIEVEMENTS_LIST.length + SEASON2_ACHIEVEMENTS_LIST.length + INVENTORY_LIST.length
+        );
+
         
         // Map to achievement objects with progress
         const season1Achievements = ACHIEVEMENTS_LIST.map((ach, i) => ({
@@ -84,27 +102,63 @@ app.get('/achievements/:steamid', (req, res) => {
             progress: season2Progress[i] || 0
         }));
 
+        const inventoryData = INVENTORY_LIST.map((ach, i) => ({
+            ...ach,
+            progress: inventoryProgress[i] || 0
+        }));
+
         const { months, days, hours } = getTimeSinceStart(START_DATE);
         const runtimeText = `${months}m ${days}d ${hours}h`;
 
         function generateAchievementsHTML(achievements) {
-    return achievements.map(a => {
-        const percent = Math.floor((a.progress / a.goal) * 100);
-        const isCompleted = (a.progress >= a.goal);
-        const statusClass = isCompleted ? "unlocked" : (percent > 0 ? "" : "locked");
+            return achievements.map(a => {
+            const percent = Math.floor((a.progress / a.goal) * 100);
+            const isCompleted = (a.progress >= a.goal);
+            const statusClass = isCompleted ? "unlocked" : (percent > 0 ? "" : "locked");
 
-        return `
-            <div class="achievement ${statusClass}">
-                <div class="title">${a.title}</div>
-                <div class="description">${a.description}</div>
-                <div class="progress-bar">
-                    <div class="progress-fill" style="width:${percent}%;"></div>
+            return `
+                <div class="achievement ${statusClass}">
+                    <div class="title">${a.title}</div>
+                    <div class="description">${a.description}</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width:${percent}%;"></div>
+                    </div>
+                    ${!isCompleted ? `<div class="progress-text">${a.progress}/${a.goal}</div>` : ''}
                 </div>
-                ${!isCompleted ? `<div class="progress-text">${a.progress}/${a.goal}</div>` : ''}
-            </div>
-        `;
-    }).join('');
-}
+            `;
+            }).join('');
+        }
+
+        function generateInv(achievements) {
+            return achievements.map(a => {
+
+            const getBackgroundColor = (title) => {
+            switch (title) {
+                case 'Mythical Crystal':
+                return '#8e44ad'; // purple
+                case 'Gold Tooth':
+                return '#f1c40f'; // gold
+                case 'Iron':
+                return '#5334ddff'; // gray
+                case 'Bones':
+                return '#ecf0f1'; // light
+                case 'Flesh':
+                return '#ecf0f1'; // red
+                default:
+                return '#ecf0f1'; // default white
+            }
+            };
+            return `
+                <div class="inventory-item" style="border: 2px solid ${getBackgroundColor(a.title)}">
+                    <div class="item-header">
+                    <span class="item-name">${a.title}</span>
+                    <span class="item-count">x ${a.progress}</span>
+                    </div>
+                    <div class="item-description">${a.description}</div>
+                </div>
+            `;
+            }).join('');
+        }
 
         // Generate HTML
                 // Generate HTML
@@ -216,20 +270,19 @@ app.get('/achievements/:steamid', (req, res) => {
         gap: 20px;
         /* Fallback for CS 1.6 */
         white-space: nowrap;
-    }
-    
-    .season-tab {
-        padding: 8px 16px;
-        cursor: pointer;
-        background-color: #1e1e1e;
-        border: 1px solid #444;
-        color: #fff;
-        border-radius: 4px;
-        transition: 0.2s;
-        /* Fallback for CS 1.6 */
-        display: inline-block;
-        margin: 0 10px;
-    }
+        }
+        .season-tab {
+            padding: 8px 16px;
+            cursor: pointer;
+            background-color: #1e1e1e;
+            border: 1px solid #444;
+            color: #fff;
+            border-radius: 4px;
+            transition: 0.2s;
+            /* Fallback for CS 1.6 */
+            display: inline-block;
+            margin: 0 10px;
+        }
         .season-tab:hover, .season-tab.active {
             background-color: #444;
         }
@@ -245,6 +298,42 @@ app.get('/achievements/:steamid', (req, res) => {
         .season-container.active {
             display: block;
         }
+        .inventory-item {
+            background: #2a2e35;
+            padding: 12px 16px;
+            border-radius: 6px;
+            color: #fff;
+            border: 1px solid #444;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            width: 250px;
+            transition: 0.3s;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            margin-bottom: 10px;
+            margin-right: 10px;
+        }
+        .inventory-item:hover {
+            background: #3b4049;
+        }
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            font-weight: bold;
+            color: #00e676;
+        }
+        .item-description {
+            font-size: 12px;
+            color: #aaa;
+            line-height: 1.3;
+        }
+        #inventory-tab {
+        display: flex;
+        flex-wrap: wrap;            /* Allow wrapping */
+        justify-content: center;    /* Center horizontally */
+        align-items: center;        /* Center vertically */
+        }
     </style>
     </head>
     <body>
@@ -258,44 +347,47 @@ app.get('/achievements/:steamid', (req, res) => {
     <div class="season-tabs">
         <div class="season-tab active" onclick="showSeason('season1')">Phase 1</div>
         <div class="season-tab" onclick="showSeason('season2')">Phase 2</div>
+        <div class="season-tab" onclick="showSeason('inventory')">Inventory</div>
     </div>
     <div class="container">
         <div id="season1-achievements" class="season-container active">
             ${generateAchievementsHTML(season1Achievements)}
         </div>
-        <div id="season2-achievements" class="season-container" 
-     style="position:relative;">
-    ${generateAchievementsHTML(season2Achievements)}
-    <!-- Fallback for CS 1.6 -->
-    <div class="motd-blur-fallback" 
-         style="position:absolute; top:0; left:0; width:100%; height:100%; 
-                background:rgba(0,0,0,0.7); pointer-events:none;"></div>
-</div>
+        <div id="season2-achievements" class="season-container" style="position:relative;">
+            ${generateAchievementsHTML(season2Achievements)}
+            <!-- Fallback for CS 1.6 -->
+            <div class="motd-blur-fallback" style="position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); pointer-events:none;"></div>
+        </div>
+        <div id="inventory-tab" class="season-container">
+            ${generateInv(inventoryData)}
+        </div>
     </div>
+
     <script type="text/javascript">
         function showSeason(season) {
-            // Update active tab styling
-            var tabs = document.querySelectorAll('.season-tab');
-            for (var i = 0; i < tabs.length; i++) {
-                tabs[i].classList.remove('active');
-            }
-            event.target.classList.add('active');
-            
-            // Show/hide achievement lists
-            var season1 = document.getElementById('season1-achievements');
-            var season2 = document.getElementById('season2-achievements');
-            
-            if (season === 'season1') {
-                season1.classList.add('active');
-                season1.classList.remove('blurred');
-                season2.classList.remove('active');
-                season2.classList.add('blurred');
-            } else {
-                season1.classList.remove('active');
-                season1.classList.add('blurred');
-                season2.classList.add('active');
-            }
-        }
+    var tabs = document.querySelectorAll('.season-tab');
+    for (var i = 0; i < tabs.length; i++) {
+        tabs[i].classList.remove('active');
+    }
+    event.target.classList.add('active');
+
+    var season1 = document.getElementById('season1-achievements');
+    var season2 = document.getElementById('season2-achievements');
+    var inventory = document.getElementById('inventory-tab');
+
+    season1.classList.remove('active', 'blurred');
+    season2.classList.remove('active', 'blurred');
+    inventory.classList.remove('active', 'blurred');
+
+    if (season === 'season1') {
+        season1.classList.add('active');
+    } else if (season === 'season2') {
+        season2.classList.add('active');
+    } else if (season === 'inventory') {
+        inventory.classList.add('active');
+    }
+}
+
     </script>
     <div style="text-align: center; font-size: 10px; color: #555; margin-top: 20px;">
         Made with ❤️ by <strong>traS</strong>
